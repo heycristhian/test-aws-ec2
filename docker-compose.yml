@@ -1,0 +1,40 @@
+version: '3.8'
+
+volumes:
+  mysql_data: { }
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db_example
+      MYSQL_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    networks:
+      - my-network
+
+  aws:
+    depends_on:
+      - "mysql"
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    image: heycristhian/aws
+    container_name: aws-app
+    ports:
+      - "8080:8080"
+    networks:
+      - my-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/db_example
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+networks:
+  my-network:
+    driver: bridge
